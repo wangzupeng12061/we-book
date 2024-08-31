@@ -8,6 +8,12 @@ import (
 type UserHandler struct {
 }
 
+func (u UserHandler) RegisterRoutes(server *gin.Engine) {
+	server.POST("/users/login", u.Login)
+	server.POST("/users/signup", u.SignUp)
+	server.POST("/users/edit", u.Edit)
+	server.GET("/users/profile", u.Profile)
+}
 func (u *UserHandler) SignUp(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "hello, signup")
 

@@ -8,9 +8,6 @@ import (
 func main() {
 	server := gin.Default()
 	u := &web.UserHandler{}
-	server.POST("/users/login", u.Login)
-	server.POST("/users/signup", u.SignUp)
-	server.POST("/users/edit", u.Edit)
-	server.GET("/users/profile", u.Profile)
+	u.RegisterRoutes(server)
 	server.Run(":8080")
 }
