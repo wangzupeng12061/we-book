@@ -2,7 +2,10 @@ module github.com/wangzupeng12061/we-book
 
 go 1.22.5
 
-require github.com/gin-gonic/gin v1.10.0
+require (
+	github.com/dlclark/regexp2 v1.11.4
+	github.com/gin-gonic/gin v1.10.0
+)
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
