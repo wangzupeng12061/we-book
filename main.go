@@ -2,11 +2,14 @@ package main
 
 import (
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/wangzupeng12061/we-book/internal/repository"
 	"github.com/wangzupeng12061/we-book/internal/repository/dao"
 	"github.com/wangzupeng12061/we-book/internal/service"
 	"github.com/wangzupeng12061/we-book/internal/web"
+	"github.com/wangzupeng12061/we-book/internal/web/middleware"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"strings"
@@ -37,6 +40,9 @@ func initWebServer() *gin.Engine {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
+	store := cookie.NewStore([]byte("secret"))
+	server.Use(sessions.Sessions("mysession", store))
+	server.Use(middleware.NewLoginMiddlewareBuilder().Build())
 	return server
 }
 
