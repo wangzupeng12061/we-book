@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/wangzupeng12061/we-book/internal/repository"
 	"github.com/wangzupeng12061/we-book/internal/repository/dao"
@@ -40,9 +40,17 @@ func initWebServer() *gin.Engine {
 		},
 		MaxAge: 12 * time.Hour,
 	}))
-	store := cookie.NewStore([]byte("secret"))
+	//store := cookie.NewStore([]byte("secret"))
+	//store := memstore.NewStore([]byte("0sbBgcdb79Dd4fbjBF336s855sA6b20w"),
+	//	[]byte("es982F0250Bnt1qExlF12l631nmEge1y"))
+	store, err := redis.NewStore(16, "tcp", "localhost:6379", "",
+		[]byte("0sbBgcdb79Dd4fbjBF336s855sA6b20w"),
+		[]byte("es982F0250Bnt1qExlF12l631nmEge1y"))
+	if err != nil {
+		panic(err)
+	}
 	server.Use(sessions.Sessions("mysession", store))
-	server.Use(middleware.NewLoginMiddlewareBuilder().Build())
+	server.Use(middleware.NewLoginMiddlewareBuilder().IgnorePaths("/users/login").Build())
 	return server
 }
 

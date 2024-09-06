@@ -29,7 +29,7 @@ func NewUserHandler(svc *service.UserService) *UserHandler {
 	}
 
 }
-func (u UserHandler) RegisterRoutes(server *gin.Engine) {
+func (u *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug := server.Group("/users")
 	ug.GET("/profile", u.Profile)
 	ug.POST("/edit", u.Edit)
@@ -86,7 +86,7 @@ func (u *UserHandler) SignUp(ctx *gin.Context) {
 	}
 	ctx.String(http.StatusOK, "注册成功")
 }
-func (u UserHandler) Login(ctx *gin.Context) {
+func (u *UserHandler) Login(ctx *gin.Context) {
 	type LoginReq struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -105,16 +105,31 @@ func (u UserHandler) Login(ctx *gin.Context) {
 		return
 	}
 	sess := sessions.Default(ctx)
-	sess.Save()
+
 	sess.Set("userId", user.ID)
+
+	sess.Options(sessions.Options{
+		//Secure:   false,
+		//HttpOnly: false,
+		MaxAge: 60,
+	})
+	sess.Save()
 	ctx.String(http.StatusOK, "登录成功")
 
 	return
 }
-func (u UserHandler) Edit(ctx *gin.Context) {
+func (u *UserHandler) Logout(ctx *gin.Context) {
+	sess := sessions.Default(ctx)
+	sess.Options(sessions.Options{
+		MaxAge: -1,
+	})
+	sess.Save()
+	ctx.String(http.StatusOK, "退出成功")
+}
+func (u *UserHandler) Edit(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "hello, edit")
 }
-func (u UserHandler) Profile(ctx *gin.Context) {
+func (u *UserHandler) Profile(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "hello, profile")
 
 }

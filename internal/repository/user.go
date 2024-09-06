@@ -19,7 +19,6 @@ func NewUserRepository(dao *dao.UserDAO) *UserRepository {
 
 func (repo *UserRepository) Create(ctx context.Context, u domain.User) error {
 	return repo.dao.Insert(ctx, dao.User{
-		Id:       u.ID,
 		Email:    u.Email,
 		Password: u.Password,
 	})
@@ -35,5 +34,5 @@ func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (doma
 		ID:       u.Id,
 		Email:    u.Email,
 		Password: u.Password,
-	}, err
+	}, nil
 }
