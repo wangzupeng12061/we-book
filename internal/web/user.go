@@ -6,10 +6,11 @@ import (
 	regexp "github.com/dlclark/regexp2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	jwt "github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/wangzupeng12061/we-book/internal/domain"
 	"github.com/wangzupeng12061/we-book/internal/service"
 	"net/http"
+	"time"
 )
 
 type UserHandler struct {
@@ -33,7 +34,9 @@ func NewUserHandler(svc *service.UserService) *UserHandler {
 }
 func (u *UserHandler) RegisterRoutes(server *gin.Engine) {
 	ug := server.Group("/users")
-	ug.GET("/profile", u.Profile)
+	//ug.GET("/profile", u.Profile)
+	ug.GET("/profile", u.ProfileJWT)
+
 	ug.POST("/edit", u.Edit)
 	//ug.POST("/login", u.Login)
 	ug.POST("/signup", u.SignUp)
@@ -139,7 +142,13 @@ func (u *UserHandler) LoginJWT(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "登录失败")
 		return
 	}
-	token := jwt.New(jwt.SigningMethodHS512)
+	cliam := UserClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute)),
+		},
+		Uid: user.ID,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, cliam)
 	tokenString, err := token.SignedString([]byte("k6CswdUm77WKcbM68UQUuxVsHSpTCwgK"))
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, "系统错误")
@@ -166,4 +175,24 @@ func (u *UserHandler) Edit(ctx *gin.Context) {
 func (u *UserHandler) Profile(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "hello, profile")
 
+}
+func (u *UserHandler) ProfileJWT(ctx *gin.Context) {
+	c, exists := ctx.Get("claims")
+	if !exists {
+		ctx.String(http.StatusOK, "系统错误")
+		return
+	}
+	claims, ok := c.(*UserClaims)
+	if !ok {
+		ctx.String(http.StatusOK, "系统错误")
+		return
+	}
+	fmt.Println(claims.Uid)
+	ctx.String(http.StatusOK, "hello, profile")
+
+}
+
+type UserClaims struct {
+	jwt.RegisteredClaims
+	Uid int64
 }
