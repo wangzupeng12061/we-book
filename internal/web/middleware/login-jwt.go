@@ -51,6 +51,10 @@ func (b *LoginJWTMiddlewareBuilder) Build() gin.HandlerFunc {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
+		if claims.UseAgent != ctx.Request.UserAgent() {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
 		now := time.Now()
 		if claims.ExpiresAt.Sub(now) < time.Second*10 {
 			claims.ExpiresAt = jwt.NewNumericDate(now.Add(time.Minute))
