@@ -6,6 +6,7 @@ import (
 	redis1 "github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"github.com/wangzupeng12061/we-book/config"
 	"github.com/wangzupeng12061/we-book/internal/pkg/ginx/middlewares/ratelimit"
 	"github.com/wangzupeng12061/we-book/internal/repository"
 	"github.com/wangzupeng12061/we-book/internal/repository/dao"
@@ -14,6 +15,7 @@ import (
 	"github.com/wangzupeng12061/we-book/internal/web/middleware"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -23,13 +25,16 @@ func main() {
 	u := initUser(db)
 	server := initWebServer()
 	u.RegisterRoutes(server)
+	server.GET("/hello", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "hello")
+	})
 	server.Run(":8080")
 }
 
 func initWebServer() *gin.Engine {
 	server := gin.Default()
 	redisClient := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: config.Config.Redis.Addr,
 	})
 	server.Use(ratelimit.NewBuilder(redisClient, time.Second, 100).Build())
 	//server.Use(redislimit.NewRedisActiveLimit(redisClient,3,"",)
@@ -50,7 +55,7 @@ func initWebServer() *gin.Engine {
 	//store := cookie.NewStore([]byte("secret"))
 	//store := memstore.NewStore([]byte("0sbBgcdb79Dd4fbjBF336s855sA6b20w"),
 	//	[]byte("es982F0250Bnt1qExlF12l631nmEge1y"))
-	store, err := redis1.NewStore(16, "tcp", "localhost:6379", "",
+	store, err := redis1.NewStore(16, "tcp", config.Config.Redis.Addr, "",
 		[]byte("0sbBgcdb79Dd4fbjBF336s855sA6b20w"),
 		[]byte("es982F0250Bnt1qExlF12l631nmEge1y"))
 	if err != nil {
@@ -58,7 +63,7 @@ func initWebServer() *gin.Engine {
 	}
 	server.Use(sessions.Sessions("mysession", store))
 	//server.Use(middleware.NewLoginMiddlewareBuilder().IgnorePaths("/users/login").Build())
-	server.Use(middleware.NewLoginJWTMiddlewareBuilder().IgnorePaths("/users/login").Build())
+	server.Use(middleware.NewLoginJWTMiddlewareBuilder().IgnorePaths("/users/signup").IgnorePaths("/users/login").Build())
 	return server
 }
 
@@ -70,7 +75,7 @@ func initUser(db *gorm.DB) *web.UserHandler {
 	return u
 }
 func initDB() *gorm.DB {
-	db, err := gorm.Open(mysql.Open("root:root@tcp(localhost:13316)/webook"))
+	db, err := gorm.Open(mysql.Open(config.Config.DB.DSN))
 	if err != nil {
 		panic(err)
 	}
