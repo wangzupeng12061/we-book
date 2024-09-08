@@ -28,7 +28,10 @@ func main() {
 	server.GET("/hello", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "hello")
 	})
-	server.Run(":8080")
+	err := server.Run(":8080")
+	if err != nil {
+		panic(err)
+	}
 }
 
 func initWebServer() *gin.Engine {
