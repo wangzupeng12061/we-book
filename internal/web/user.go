@@ -144,7 +144,7 @@ func (u *UserHandler) LoginJWT(ctx *gin.Context) {
 	}
 	cliam := UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 30)),
 		},
 		Uid:      user.ID,
 		UseAgent: ctx.Request.UserAgent(),
